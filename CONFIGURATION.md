@@ -133,3 +133,55 @@ If `EMAIL_SERVER`, `EMAIL_FROM`, or `EMAIL_TO` is missing, the email step is ski
 On the very first run, the `controld/` directory does not exist yet. Stage 1 will create it and commit all downloaded files as new. Stage 2 will then push all domains in those files to the configured folders — treat this as an initial population, not an incremental diff.
 
 If you already have domains in your Control D folders that are not in the upstream files, they will be removed during the first run (Stage 2 always reconciles to the exact desired state). Make sure your folder contents align with what you expect before the first run, or review the Stage 2 log output carefully.
+
+---
+
+## `requirements.txt` — Python dependencies
+
+This repo has a single Python dependency:
+
+```
+requests==2.33.1
+```
+
+`requests` is used by both scripts to make HTTP calls — Stage 1 uses it to download JSON files from the hagezi upstream repo, and Stage 2 uses it to call the Control D API. The version is pinned exactly (`==`) rather than using a range (`>=`) to ensure that the workflow runs the same code every time and is not silently broken by an upstream release.
+
+When a new version of `requests` is published, update the pin here and in the [dependency reference](#-dependency--action-version-reference) below, then re-test.
+
+> 💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token and email credentials never leave your account. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
+
+---
+
+## 📦 Dependency & action version reference
+
+The entries below document every pinned external dependency used by this repo. Check these periodically and update the pins when new versions are released. Commit hashes are used for Actions (instead of tags) to prevent supply-chain attacks where a tag is silently moved to a different commit.
+
+### Python packages
+
+```yaml
+# - package: "requests"
+#   url: "https://pypi.org/project/requests/#requests-2.33.1-py3-none-any.whl"
+#   version: "2.33.1"
+#   date: "2026-03-30"
+```
+
+### GitHub Actions
+
+```yaml
+# - action: "actions/checkout"
+#   url: "https://github.com/actions/checkout/releases"
+#   version: "6.0.2"
+#   date: "2026-01-09"
+#   commit: "de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+
+# - action: "actions/setup-python"
+#   url: "https://github.com/actions/setup-python/releases"
+#   python-releases: "https://www.python.org/downloads/source/"
+#   version: "v6.2.0"
+#   date: "2026-01-21"
+#   commit: "a309ff8b426b58ec0e2a45f0f869d46889d02405"
+#   with:
+#     python-version: "3.14"
+```
+
+To update an action: find the new release tag and its corresponding full commit hash on the action's GitHub releases page, update the `uses:` line in `.github/workflows/sync-controld.txt` to the new commit hash, and update the entry above.

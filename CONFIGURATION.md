@@ -55,18 +55,11 @@ FILE_MAPPINGS: Dict[str, List[Tuple[str, str]]] = {
 
 ### Available upstream files
 
-These are the files currently published by hagezi in the `controld/` directory of their repo:
+The hagezi repo publishes a large number of Control D-compatible JSON files covering everything from tracker allow-lists to spam TLDs. Browse the full list here:
 
-| Filename | What it covers |
-|----------|----------------|
-| `apple-private-relay-allow-folder.json` | Apple Private Relay exit nodes (allow-list) |
-| `meta-tracker-allow-folder.json` | Meta tracker domains (allow-list) |
-| `microsoft-allow-folder.json` | Microsoft service domains (allow-list) |
-| `native-tracker-apple-folder.json` | Apple native tracker domains |
-| `native-tracker-microsoft-folder.json` | Microsoft native tracker domains |
-| `spam-tlds-folder.json` | Spam and high-abuse top-level domains |
+**[hagezi/dns-blocklists — controld/](https://github.com/hagezi/dns-blocklists/tree/main/controld)**
 
-Remove any file you don't want to track. If hagezi publishes new files in the future, add them here and to `TARGET_FILES`.
+Add any filename from that directory to `TARGET_FILES` and `FILE_MAPPINGS` to start syncing it. This workflow is not limited to any particular subset — use whatever files suit your setup.
 
 ### Processing order and cross-folder deduplication
 
@@ -111,17 +104,27 @@ Standard cron syntax applies. [crontab.guru](https://crontab.guru) is useful for
 
 Set these under **Settings → Secrets and variables → Actions**:
 
-| Secret | Required | Notes |
-|--------|:--------:|-------|
-| `CTRLD_API_TOKEN` | ✅ | Control D dashboard → API |
-| `EMAIL_SERVER` | Optional | e.g. `smtp.gmail.com` |
-| `EMAIL_PORT` | Optional | `587` (STARTTLS) or `465` (TLS) |
-| `EMAIL_USERNAME` | Optional | SMTP login |
-| `EMAIL_PASSWORD` | Optional | Use an app password if your provider requires it |
-| `EMAIL_FROM` | Optional | Sender address shown in the report email |
-| `EMAIL_TO` | Optional | Where to deliver the report |
+#### 🔑 Required Secrets
 
-All email secrets are optional. If `EMAIL_SERVER`, `EMAIL_FROM`, or `EMAIL_TO` is missing, the email step is skipped silently.
+| Secret | Value | Description |
+|--------|-------|-------------|
+| `GITHUB_TOKEN` | *(auto-provided)* | Provided automatically by GitHub Actions |
+| `CTRLD_API_TOKEN` | Your Control D API token | Requires **write** permissions. Found in the Control D dashboard under **API**. |
+
+#### ✉️ Email Notification Secrets (optional)
+
+When changes are detected, the workflow can send an email report. Omit any to skip email:
+
+| Secret | Value | Description |
+|--------|-------|-------------|
+| `EMAIL_SERVER` | `smtp.gmail.com` | Gmail SMTP server |
+| `EMAIL_PORT` | `587` | Gmail STARTTLS port |
+| `EMAIL_USERNAME` | Your Gmail address | e.g. `you@gmail.com` |
+| `EMAIL_PASSWORD` | Your Gmail App Password | Generate one at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) — **not** your regular Gmail password |
+| `EMAIL_FROM` | Your Gmail address | Sender address |
+| `EMAIL_TO` | Your Gmail address | Where sync notifications are sent |
+
+If `EMAIL_SERVER`, `EMAIL_FROM`, or `EMAIL_TO` is missing, the email step is skipped silently.
 
 ---
 

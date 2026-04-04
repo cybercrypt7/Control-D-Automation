@@ -184,4 +184,4 @@ The entries below document every pinned external dependency used by this repo. C
 #     python-version: "3.14"
 ```
 
-To update an action: find the new release tag and its corresponding full commit hash on the action's GitHub releases page, update the `uses:` line in `.github/workflows/sync-controld.txt` to the new commit hash, and update the entry above.
+To update an action: find the new release tag and its corresponding full commit hash on the action's GitHub releases page, update the `uses:` line in `.github/workflows/sync-controld.yml` to the new commit hash, and update the entry above.

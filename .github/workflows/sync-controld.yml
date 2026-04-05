@@ -47,12 +47,6 @@ jobs:
         env:
           GITHUB_TOKEN:      ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          EMAIL_SERVER:      ${{ secrets.EMAIL_SERVER }}
-          EMAIL_PORT:        ${{ secrets.EMAIL_PORT }}
-          EMAIL_USERNAME:    ${{ secrets.EMAIL_USERNAME }}
-          EMAIL_PASSWORD:    ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_FROM:        ${{ secrets.EMAIL_FROM }}
-          EMAIL_TO:          ${{ secrets.EMAIL_TO }}
         run: python scripts/controld_sync.py
 
       # ── Stage 2: Push domain changes to Control D API ────────────────────────

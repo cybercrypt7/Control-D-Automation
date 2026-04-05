@@ -15,13 +15,9 @@ import sys
 import time
 import shutil
 import subprocess
-import smtplib
-import ssl
 import difflib
 from pathlib import Path
 from typing import List, Tuple, Optional
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 import requests
 
@@ -195,60 +191,10 @@ class ControldSync:
 
         return bool(changed), pretty_output
 
-    # ── Email notification ────────────────────────────────────────────────────
-
-    def send_email(self, diff_output: str, email_config: dict) -> None:
-        """
-        Send a diff notification email.
-        Supports implicit TLS (port 465) and STARTTLS (port 587 or 25).
-        """
-        msg = MIMEMultipart()
-        msg["From"]    = email_config["from"]
-        msg["To"]      = email_config["to"]
-        msg["Subject"] = "controld folder updated"
-        body = (
-            "One or more controld files have been updated from upstream.\n\n"
-            f"Emoji-diff of the changes:\n\n{diff_output}"
-        )
-        msg.attach(MIMEText(body, "plain"))
-
-        server   = email_config["server"]
-        port     = email_config["port"]
-        username = email_config.get("username", "")
-        password = email_config.get("password", "")
-
-        try:
-            if port == 465:
-                # Implicit TLS — connection is encrypted from the start
-                context = ssl.create_default_context()
-                with smtplib.SMTP_SSL(server, port, context=context) as smtp:
-                    if username and password:
-                        smtp.login(username, password)
-                    smtp.send_message(msg)
-            else:
-                # STARTTLS (port 587 or 25) — upgrade to TLS before any auth
-                with smtplib.SMTP(server, port) as smtp:
-                    smtp.ehlo()
-                    smtp.starttls()   # always upgrade — never send plaintext
-                    smtp.ehlo()
-                    if username and password:
-                        smtp.login(username, password)
-                    smtp.send_message(msg)
-
-            print("Email notification sent successfully.")
-
-        except Exception as exc:
-            print(f"Failed to send email: {exc}")
-
     # ── Orchestration ─────────────────────────────────────────────────────────
 
-    def run(
-        self,
-        github_token: str,
-        repo_name: str,
-        email_config: Optional[dict] = None,
-    ) -> None:
-        """End-to-end sync: download → diff → commit → notify."""
+    def run(self, github_token: str, repo_name: str) -> None:
+        """End-to-end sync: download → diff → commit."""
         try:
             print("Starting controld sync process...")
             self.setup_git()
@@ -263,9 +209,6 @@ class ControldSync:
             if has_changes:
                 print("Changes detected — committing and pushing...")
                 self.commit_and_push(github_token, repo_name)
-
-                if email_config:
-                    self.send_email(diff_output, email_config)
 
                 if github_output_path:
                     with open(github_output_path, "a") as fh:
@@ -299,18 +242,7 @@ def main() -> None:
         print("ERROR: GITHUB_TOKEN and GITHUB_REPOSITORY must be set.")
         sys.exit(1)
 
-    email_config: Optional[dict] = None
-    if all(os.getenv(k) for k in ["EMAIL_SERVER", "EMAIL_PORT", "EMAIL_FROM", "EMAIL_TO"]):
-        email_config = {
-            "server":   os.getenv("EMAIL_SERVER"),
-            "port":     int(os.getenv("EMAIL_PORT", "587")),
-            "username": os.getenv("EMAIL_USERNAME", ""),
-            "password": os.getenv("EMAIL_PASSWORD", ""),
-            "from":     os.getenv("EMAIL_FROM"),
-            "to":       os.getenv("EMAIL_TO"),
-        }
-
-    ControldSync().run(github_token, repo_name, email_config)
+    ControldSync().run(github_token, repo_name)
 
 
 if __name__ == "__main__":

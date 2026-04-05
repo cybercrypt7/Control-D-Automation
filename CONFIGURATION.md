@@ -98,6 +98,8 @@ on:
 
 Standard cron syntax applies. [crontab.guru](https://crontab.guru) is useful for building expressions.
 
+> **Once configuration is complete**, uncomment the `schedule` cron lines in `.github/workflows/sync-controld.yml` to enable automatic runs. The lines are commented out by default so the workflow does not run on a schedule before you have finished setting up your `FILE_MAPPINGS`, `TARGET_FILES`, and GitHub secrets.
+
 ---
 
 ## Required GitHub secrets

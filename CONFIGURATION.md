@@ -140,15 +140,27 @@ If you already have domains in your Control D folders that are not in the upstre
 
 ## `requirements.txt` — Python dependencies
 
-This repo has a single Python dependency:
+`requests` is used by both scripts to make HTTP calls — Stage 1 uses it to download JSON files from the hagezi upstream repo, and Stage 2 uses it to call the Control D API.
 
-```
-requests==2.33.1
-```
+Dependencies are managed with **[pip-tools](https://pip-tools.readthedocs.io)**:
 
-`requests` is used by both scripts to make HTTP calls — Stage 1 uses it to download JSON files from the hagezi upstream repo, and Stage 2 uses it to call the Control D API. The version is pinned exactly (`==`) rather than using a range (`>=`) to ensure that the workflow runs the same code every time and is not silently broken by an upstream release.
+| File | Purpose |
+|------|---------|
+| `requirements.in` | Human-edited source — list only direct dependencies here |
+| `requirements.txt` | Auto-generated lock file — all packages pinned by version **and** SHA-256 hash |
 
-When a new version of `requests` is published, update the pin here and in the [dependency reference](#-dependency--action-version-reference) below, then re-test.
+The workflow installs with `pip install --require-hashes -r requirements.txt`, which means pip will refuse to install any package whose hash does not match. This prevents a compromised or tampered package on PyPI from being silently installed.
+
+### Updating a dependency
+
+1. Edit `requirements.in` (change the version pin or add/remove a package).
+2. Regenerate the lock file:
+   ```bash
+   pip install pip-tools
+   pip-compile --generate-hashes requirements.in -o requirements.txt
+   ```
+3. Commit both `requirements.in` and `requirements.txt`.
+4. Update the version entry in the [dependency reference](#-dependency--action-version-reference) below.
 
 > 💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token and email credentials never leave your account. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
 
@@ -160,11 +172,16 @@ The entries below document every pinned external dependency used by this repo. C
 
 ### Python packages
 
+Versions below reflect the current `requirements.in` pin. All transitive
+dependencies are locked with SHA-256 hashes in `requirements.txt` — run
+`pip-compile --generate-hashes` after any change (see above).
+
 ```yaml
 # - package: "requests"
-#   url: "https://pypi.org/project/requests/#requests-2.33.1-py3-none-any.whl"
+#   url: "https://pypi.org/project/requests/"
 #   version: "2.33.1"
 #   date: "2026-03-30"
+#   transitive-deps: "certifi, charset-normalizer, idna, urllib3"
 ```
 
 ### GitHub Actions

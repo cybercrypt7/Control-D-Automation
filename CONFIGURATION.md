@@ -1,5 +1,7 @@
 # Configuration guide
 
+> 💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token and email credentials never leave your account. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
+
 This document covers every value you need to change to make this workflow work for your own Control D account.
 
 ---
@@ -161,8 +163,6 @@ The workflow installs with `pip install --require-hashes -r requirements.txt`, w
    ```
 3. Commit both `requirements.in` and `requirements.txt`.
 4. Update the version entry in the [dependency reference](#-dependency--action-version-reference) below.
-
-> 💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token and email credentials never leave your account. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
 
 ---
 

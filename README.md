@@ -34,6 +34,8 @@ The workflow runs twice daily (05:00 and 17:00 UTC) in two stages:
 
 ## 🚀 Quick Start
 
+> 💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token and email credentials never leave your account. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
+
 ### 1. Fork this repo
 
 ### 2. Set the required secrets

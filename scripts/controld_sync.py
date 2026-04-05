@@ -67,8 +67,7 @@ class ControldSync:
             check=True,
         )
         remote_url = f"https://x-access-token:{github_token}@github.com/{repo_name}.git"
-        subprocess.run(["git", "remote", "set-url", "origin", remote_url], check=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True)
+        subprocess.run(["git", "push", remote_url, "main"], check=True)
         print("Changes pushed to repository")
 
     # ── Temp dir helpers ──────────────────────────────────────────────────────

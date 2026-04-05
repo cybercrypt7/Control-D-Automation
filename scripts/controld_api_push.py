@@ -26,6 +26,7 @@ from email.mime.multipart import MIMEMultipart
 from typing import Dict, List, Optional, Set, Tuple
 
 import requests
+from urllib.parse import quote
 
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -204,7 +205,7 @@ def delete_hostname(profile_pk: str, hostname: str, api_token: str) -> None:
     404 is treated as success (already gone — idempotent).
     """
     resp = requests.delete(
-        f"{BASE_URL}/profiles/{profile_pk}/rules/{hostname}",
+        f"{BASE_URL}/profiles/{profile_pk}/rules/{quote(hostname, safe='')}",
         headers=_headers(api_token),
         timeout=30,
     )
@@ -521,11 +522,15 @@ def main() -> None:
     email_body = ""
     github_output = os.environ.get("GITHUB_OUTPUT", "")
     if github_output and os.path.exists(github_output):
-        raw = open(github_output).read()
+        with open(github_output) as fh:
+            raw = fh.read()
         if "email_body<<CTRLD_EOF" in raw:
             start = raw.index("email_body<<CTRLD_EOF") + len("email_body<<CTRLD_EOF\n")
-            end   = raw.index("\nCTRLD_EOF", start)
-            email_body = raw[start:end]
+            end   = raw.find("\nCTRLD_EOF", start)
+            if end != -1:
+                email_body = raw[start:end]
+            else:
+                log.warning("GITHUB_OUTPUT truncated — email body marker not closed, skipping email")
 
     if email_body:
         send_email(email_body)

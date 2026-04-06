@@ -384,7 +384,7 @@ def sync_folder(
 
 # ── Main run ──────────────────────────────────────────────────────────────────
 
-def run(api_token: str) -> bool:
+def run(api_token: str) -> Tuple[bool, str]:
     """
     Processes all FILE_MAPPINGS entries.
 
@@ -393,8 +393,9 @@ def run(api_token: str) -> bool:
     the same domain appearing in both an allow and a block folder.
     Processing order follows FILE_MAPPINGS declaration order.
 
-    Writes a formatted email body to GITHUB_OUTPUT as `email_body`.
-    Returns True only if every operation succeeded.
+    Also writes the email body to GITHUB_OUTPUT (for any downstream workflow
+    steps that may need it).
+    Returns (success, email_body): True only if every operation succeeded.
     """
     overall_success = True
 
@@ -410,7 +411,7 @@ def run(api_token: str) -> bool:
         profile_map = fetch_profiles(api_token)
     except Exception as exc:
         log.error(f"Cannot fetch profiles — aborting: {exc}")
-        return False
+        return False, ""
 
     # Cache folder listings per profile, fetched on first access
     folder_cache: Dict[str, Dict[str, str]] = {}
@@ -511,7 +512,7 @@ def run(api_token: str) -> bool:
 
     email_body = "\n".join(body_parts)
 
-    # Write email body to GITHUB_OUTPUT so the calling step can send it
+    # Write email body to GITHUB_OUTPUT for any downstream workflow steps.
     github_output = os.environ.get("GITHUB_OUTPUT", "")
     if github_output:
         with open(github_output, "a") as fh:
@@ -520,7 +521,7 @@ def run(api_token: str) -> bool:
             fh.write("\nCTRLD_EOF\n")
         log.info("Email body written to GITHUB_OUTPUT")
 
-    return overall_success
+    return overall_success, email_body
 
 
 # ── Email send ────────────────────────────────────────────────────────────────
@@ -529,16 +530,9 @@ def send_email(email_body: str) -> None:
     """
     Sends the sync report email.
     Reads all configuration from environment variables (set as GitHub secrets).
-    Supports implicit TLS (port 465) and STARTTLS (port 587).
+    Uses implicit TLS on port 465 (SMTP_SSL).
     """
     server    = os.environ.get("EMAIL_SERVER",   "").strip()
-    try:
-        port = int(os.environ.get("EMAIL_PORT", "587").strip())
-        if not (0 < port <= 65535):
-            raise ValueError(f"port {port} is outside the valid range 1–65535")
-    except (ValueError, TypeError) as exc:
-        log.error(f"Invalid EMAIL_PORT: {exc} — skipping email")
-        return
     username  = os.environ.get("EMAIL_USERNAME", "").strip()
     password  = os.environ.get("EMAIL_PASSWORD", "").strip()
     from_addr = os.environ.get("EMAIL_FROM",     "").strip()
@@ -555,25 +549,12 @@ def send_email(email_body: str) -> None:
     msg.attach(MIMEText(email_body, "plain"))
 
     try:
-        if port == 465:
-            # Implicit TLS — encrypted from connection open
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(server, port, context=context) as smtp:
-                if username and password:
-                    smtp.login(username, password)
-                smtp.send_message(msg)
-        else:
-            # STARTTLS (port 587) — upgrade to TLS before any auth or data
-            with smtplib.SMTP(server, port) as smtp:
-                smtp.ehlo()
-                smtp.starttls()
-                smtp.ehlo()
-                if username and password:
-                    smtp.login(username, password)
-                smtp.send_message(msg)
-
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(server, 465, context=context) as smtp:
+            if username and password:
+                smtp.login(username, password)
+            smtp.send_message(msg)
         log.info("Email sent successfully")
-
     except Exception as exc:
         log.error(f"Failed to send email: {exc}")
 
@@ -587,21 +568,7 @@ def main() -> None:
         sys.exit(1)
 
     log.info("=== Control D API push: start ===")
-    success = run(api_token)
-
-    # Read the email body back from GITHUB_OUTPUT (written by run()) and send
-    email_body = ""
-    github_output = os.environ.get("GITHUB_OUTPUT", "")
-    if github_output and os.path.exists(github_output):
-        with open(github_output) as fh:
-            raw = fh.read()
-        if "email_body<<CTRLD_EOF" in raw:
-            start = raw.index("email_body<<CTRLD_EOF") + len("email_body<<CTRLD_EOF\n")
-            end   = raw.find("\nCTRLD_EOF", start)
-            if end != -1:
-                email_body = raw[start:end]
-            else:
-                log.warning("GITHUB_OUTPUT truncated — email body marker not closed, skipping email")
+    success, email_body = run(api_token)
 
     if email_body:
         send_email(email_body)

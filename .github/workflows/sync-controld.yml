@@ -20,8 +20,17 @@ concurrency:
 # Everything else is explicitly denied (principle of least privilege).
 permissions:
   contents: write
+  actions: none
+  checks: none
+  deployments: none
+  id-token: none
   issues: none
+  packages: none
+  pages: none
   pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
 
 # ── Jobs ───────────────────────────────────────────────────────────────────────
 jobs:
@@ -67,7 +76,6 @@ jobs:
         env:
           CTRLD_API_TOKEN: ${{ secrets.CTRLD_API_TOKEN }}
           EMAIL_SERVER:    ${{ secrets.EMAIL_SERVER }}
-          EMAIL_PORT:      ${{ secrets.EMAIL_PORT }}
           EMAIL_USERNAME:  ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD:  ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_FROM:      ${{ secrets.EMAIL_FROM }}

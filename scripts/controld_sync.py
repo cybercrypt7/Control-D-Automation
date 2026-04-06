@@ -115,11 +115,17 @@ class ControldSync:
 
     # ── Download ──────────────────────────────────────────────────────────────
 
-    def download_files(self) -> bool:
+    def download_files(self, github_token: str = "") -> bool:
         """
         Download TARGET_FILES from upstream with retry logic.
+        Passing github_token uses the authenticated GitHub API rate limit
+        (5 000 req/hr) instead of the shared unauthenticated limit (60 req/hr).
         Returns True on success, False after all attempts are exhausted.
         """
+        api_headers = {}
+        if github_token:
+            api_headers["Authorization"] = f"Bearer {github_token}"
+
         for attempt in range(1, MAX_ATTEMPTS + 1):
             print(f"Download attempt #{attempt}")
             try:
@@ -127,7 +133,7 @@ class ControldSync:
                 TEMP_DIR.mkdir(exist_ok=True)
 
                 # List all files in the upstream controld/ directory
-                response = requests.get(UPSTREAM_API_URL, timeout=30)
+                response = requests.get(UPSTREAM_API_URL, headers=api_headers, timeout=30)
                 response.raise_for_status()
 
                 # Download only the files we care about
@@ -246,7 +252,7 @@ class ControldSync:
             print("Starting controld sync process...")
             self.setup_git()
 
-            if not self.download_files():
+            if not self.download_files(github_token):
                 sys.exit(1)
 
             has_changes, diff_output = self.sync_files()

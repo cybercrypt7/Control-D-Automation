@@ -530,16 +530,9 @@ def send_email(email_body: str) -> None:
     """
     Sends the sync report email.
     Reads all configuration from environment variables (set as GitHub secrets).
-    Supports implicit TLS (port 465) and STARTTLS (port 587).
+    Uses implicit TLS on port 465 (SMTP_SSL).
     """
     server    = os.environ.get("EMAIL_SERVER",   "").strip()
-    try:
-        port = int(os.environ.get("EMAIL_PORT", "587").strip())
-        if not (0 < port <= 65535):
-            raise ValueError(f"port {port} is outside the valid range 1–65535")
-    except (ValueError, TypeError) as exc:
-        log.error(f"Invalid EMAIL_PORT: {exc} — skipping email")
-        return
     username  = os.environ.get("EMAIL_USERNAME", "").strip()
     password  = os.environ.get("EMAIL_PASSWORD", "").strip()
     from_addr = os.environ.get("EMAIL_FROM",     "").strip()
@@ -556,26 +549,12 @@ def send_email(email_body: str) -> None:
     msg.attach(MIMEText(email_body, "plain"))
 
     try:
-        if port == 465:
-            # Implicit TLS — encrypted from connection open
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(server, port, context=context) as smtp:
-                if username and password:
-                    smtp.login(username, password)
-                smtp.send_message(msg)
-        else:
-            # STARTTLS (port 587) — upgrade to TLS before any auth or data
-            context = ssl.create_default_context()
-            with smtplib.SMTP(server, port) as smtp:
-                smtp.ehlo()
-                smtp.starttls(context=context)
-                smtp.ehlo()
-                if username and password:
-                    smtp.login(username, password)
-                smtp.send_message(msg)
-
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(server, 465, context=context) as smtp:
+            if username and password:
+                smtp.login(username, password)
+            smtp.send_message(msg)
         log.info("Email sent successfully")
-
     except Exception as exc:
         log.error(f"Failed to send email: {exc}")
 

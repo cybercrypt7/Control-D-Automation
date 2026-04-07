@@ -1,4 +1,4 @@
-# Configuration guide
+# Configuration Guide
 
 >  💡 **Privacy & security note:** This repo runs entirely within your own GitHub Actions environment. Your API token is used only for outbound requests to the Control D API, and email credentials only for outbound SMTP — neither is logged or persisted beyond the runner. For maximum privacy and security it is recommended to keep your fork **private** — this prevents your profile names, folder names, and workflow configuration from being publicly visible.
 
@@ -151,7 +151,7 @@ Dependencies are managed with **[pip-tools](https://pip-tools.readthedocs.io)**:
 
 The workflow installs with `pip install --require-hashes -r requirements.txt`, which means pip will refuse to install any package whose hash does not match. This prevents a compromised or tampered package on PyPI from being silently installed.
 
-### Updating a dependency
+### Manually Updating a dependency
 
 1. Edit `requirements.in` (change the version pin or add/remove a package).
 2. Regenerate the lock file:

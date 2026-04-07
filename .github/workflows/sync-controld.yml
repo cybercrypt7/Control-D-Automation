@@ -75,7 +75,6 @@ jobs:
         if: steps.sync.outputs.changed == 'true'
         env:
           CTRLD_API_TOKEN: ${{ secrets.CTRLD_API_TOKEN }}
-          EMAIL_SERVER:    ${{ secrets.EMAIL_SERVER }}
           EMAIL_USERNAME:  ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD:  ${{ secrets.EMAIL_PASSWORD }}
         run: |

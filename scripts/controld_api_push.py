@@ -526,18 +526,19 @@ def run(api_token: str) -> Tuple[bool, str]:
 
 # ── Email send ────────────────────────────────────────────────────────────────
 
+GMAIL_SMTP_SERVER = "smtp.gmail.com"
+
+
 def send_email(email_body: str) -> None:
     """
-    Sends the sync report email.
-    Reads all configuration from environment variables (set as GitHub secrets).
-    Uses implicit TLS on port 465 (SMTP_SSL).
+    Sends the sync report email via Gmail (smtp.gmail.com, port 465, implicit TLS).
+    Reads credentials from environment variables (set as GitHub secrets).
     """
-    server    = os.environ.get("EMAIL_SERVER",   "").strip()
     username  = os.environ.get("EMAIL_USERNAME", "").strip()
     password  = os.environ.get("EMAIL_PASSWORD", "").strip()
 
-    if not all([server, username]):
-        log.warning("Email not configured (EMAIL_SERVER/EMAIL_USERNAME missing) — skipping")
+    if not username:
+        log.warning("Email not configured (EMAIL_USERNAME missing) — skipping")
         return
 
     msg = MIMEMultipart()
@@ -548,7 +549,7 @@ def send_email(email_body: str) -> None:
 
     try:
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(server, 465, context=context) as smtp:
+        with smtplib.SMTP_SSL(GMAIL_SMTP_SERVER, 465, context=context) as smtp:
             if username and password:
                 smtp.login(username, password)
             smtp.send_message(msg)

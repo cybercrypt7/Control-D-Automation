@@ -121,11 +121,12 @@ When changes are detected, the workflow can send an email report. Omit any to sk
 
 | Secret | Value | Description |
 |--------|-------|-------------|
-| `EMAIL_SERVER` | `smtp.gmail.com` | Gmail SMTP server (port 465 implicit TLS is used automatically) |
 | `EMAIL_USERNAME` | Your Gmail address | e.g. `you@gmail.com` — used for SMTP auth, sender, and recipient |
 | `EMAIL_PASSWORD` | Your Gmail App Password | Generate one at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) — **not** your regular Gmail password |
 
-If `EMAIL_SERVER` or `EMAIL_USERNAME` is missing, the email step is skipped silently.
+Gmail's SMTP server (`smtp.gmail.com`, port 465, implicit TLS) is used automatically — no server secret needed.
+
+If `EMAIL_USERNAME` is missing, the email step is skipped silently.
 
 ---
 

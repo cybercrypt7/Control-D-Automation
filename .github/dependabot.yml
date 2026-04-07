@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  # ── GitHub Actions ────────────────────────────────────────────────────────────
+  # Keeps action pins (commit SHAs) up to date.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - dependencies
+
+  # ── Python (pip) ──────────────────────────────────────────────────────────────
+  # Keeps requirements.txt versions and SHA-256 hashes up to date.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    commit-message:
+      prefix: "build(deps)"
+    labels:
+      - dependencies

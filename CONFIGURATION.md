@@ -166,7 +166,10 @@ The workflow installs with `pip install --require-hashes -r requirements.txt`, w
 
 ## 📦 Dependency & action version reference
 
-The entries below document every pinned external dependency used by this repo. Check these periodically and update the pins when new versions are released. Commit hashes are used for Actions (instead of tags) to prevent supply-chain attacks where a tag is silently moved to a different commit.
+> **Dependabot handles updates automatically.**
+> `.github/dependabot.yml` is configured to open weekly PRs (every Monday at 06:00 UTC) for both GitHub Actions pins and Python pip dependencies. You do not need to chase versions manually — just review and merge the Dependabot PRs when they arrive.
+
+The entries below are kept for **transparency**: they document the version and commit hash that was current when each dependency was last manually reviewed, along with links to upstream release pages. Commit hashes are used for Actions (instead of tags) to prevent supply-chain attacks where a tag is silently moved to a different commit.
 
 ### Python packages
 
@@ -201,4 +204,4 @@ dependencies are locked with SHA-256 hashes in `requirements.txt` — run
 #     python-version: "3.14"
 ```
 
-To update an action: find the new release tag and its corresponding full commit hash on the action's GitHub releases page, update the `uses:` line in `.github/workflows/sync-controld.yml` to the new commit hash, and update the entry above.
+To manually update an action (outside of a Dependabot PR): find the new release tag and its corresponding full commit hash on the action's GitHub releases page, update the `uses:` line in `.github/workflows/sync-controld.yml` to the new commit hash, and update the entry above.
